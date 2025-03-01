@@ -1,5 +1,5 @@
-import conf from "../conf/conf";
-import {Client , Account, ID} from "appwrite";
+import conf from "../conf/conf.js";
+import {Client , Account} from "appwrite";
 
 export class AuthService{
     client = new Client();
@@ -12,18 +12,17 @@ export class AuthService{
         this.account = new Account(this.client);
     }
 
-    async createAccount({email,password,name}){
+    async createAccount({email, password, name}) {
         try {
-            await this.account.create(ID.unique(),email,password,name);
-
-            if(userAccount){
-                // return userAccont;
-                //call another method
+            const userAccount = await this.account.create(ID.unique(), email, password, name);
+            if (userAccount) {
+                // call another method
+                return this.login({email, password});
             } else {
-                return userAccount;
+               return  userAccount;
             }
-        }catch(error) {
-            throw(error);
+        } catch (error) {
+            throw error;
         }
     }
 
@@ -31,7 +30,7 @@ export class AuthService{
         try{
             return await this.account.createEmailPasswordSession(email,password);
         } catch(error){
-            throw(error);
+            console.error("Appwrite service::login::error", error);
         }
 
     }
@@ -41,18 +40,24 @@ export class AuthService{
             return await this.account.get();
         }catch(error){
         console.log("Appwrite service::getCurrentUser::error",error);
-        }
-
         return null;
-    }
-
-    async logout(){
-        try{
-            await this.account.deleteSession();
-        } catch(error){
-            throw(error);
         }
     }
+
+    async logout() {
+        try {
+            const currentUser = await this.getCurrentUser();
+            if (!currentUser) {
+                console.log("No user is currently logged in.");
+                return;
+            }
+    
+            await this.account.deleteSessions("current");
+            console.log("Logged out successfully.");
+        } catch (error) {
+            console.log("Appwrite service :: logout :: error", error);
+        }
+    }    
 }
 
 const authService = new AuthService();

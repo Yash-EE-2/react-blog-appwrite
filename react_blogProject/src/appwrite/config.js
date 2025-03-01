@@ -10,7 +10,7 @@ export class Service{
         this.client
             .setEndpoint(conf.appwriteUrl)
             .setProject(conf.appwriteProjectId);
-            this.databases = new Databases(htis .client);
+            this.databases = new Databases(this.client);
             this.bucket = new Storage(this.client);
     }
 
@@ -29,7 +29,7 @@ export class Service{
                 }
             )
         } catch(error){
-            throw(error);
+            console.log("Appwrite serive :: createPost :: error", error);
         }
     }
 
@@ -80,12 +80,11 @@ export class Service{
 
     async getPosts(queries = [Query.equal("status","active")]){
         try {
-            await this.databases.listDocuments(
+            return await this.databases.listDocuments(
                 conf.appwriteDatabaseId,
                 conf.appwriteCollectionId,
                 queries,
-                100,
-                0,
+                
             )
         } catch (error) {
             console.log("Appwrite service::getPosts::error",error);
